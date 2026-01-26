@@ -1,0 +1,7 @@
+FROM ubuntu:22.04
+FROM golang:1.21
+FROM alpine:3.18
+WORKDIR /app
+
+
+COPY main.go .

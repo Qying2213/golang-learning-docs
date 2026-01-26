@@ -1,0 +1,9 @@
+FROM alpine
+LABEL k="v" k1="v1" 
+WORKDIR /app
+COPY 1.txt /app/
+RUN echo 321 >> 1.txt
+ARG B=11
+ONBUILD ENV C=100
+ENV A $B
+CMD echo $C

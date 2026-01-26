@@ -1,0 +1,20 @@
+# Backend
+backend/taskmanager
+backend/*.db
+backend/*.log
+backend/.env
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
