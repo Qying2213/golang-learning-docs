@@ -6,6 +6,7 @@
 ## 📚 本章学习目标
 
 学完本章，你将能够：
+
 - 理解 HTTP 请求和响应的格式
 - 掌握各种 HTTP 方法的使用
 - 熟记常用的 HTTP 状态码
@@ -33,10 +34,10 @@ HTTP = HyperText Transfer Protocol
    - 请求方法简单（GET、POST 等）
    - 协议简单，容易实现
 
-2. 无连接
-   - 每次请求都要建立连接
-   - 请求完成后断开连接
-   - HTTP/1.1 后支持持久连接
+2. 请求独立
+   - HTTP/1.0 默认短连接（每次请求建立新连接）
+   - HTTP/1.1 默认持久连接（Keep-Alive）
+   - 但每个请求仍是独立的，服务器不记录请求间的关系
 
 3. 无状态
    - 服务器不记住你是谁
@@ -162,6 +163,7 @@ Connection: keep-alive
 ```
 
 注意：
+
 - GET 请求没有请求体
 - 参数放在 URL 的查询字符串中
 - 最后有一个空行
@@ -202,6 +204,7 @@ HTTP/1.1 200 OK
 ### 3.3 HTTP 状态码 ⭐⭐⭐
 
 #### 1xx - 信息响应
+
 ```
 100 Continue
 - 客户端应继续请求
@@ -209,6 +212,7 @@ HTTP/1.1 200 OK
 ```
 
 #### 2xx - 成功
+
 ```
 200 OK
 - 请求成功
@@ -224,6 +228,7 @@ HTTP/1.1 200 OK
 ```
 
 #### 3xx - 重定向
+
 ```
 301 Moved Permanently
 - 永久重定向
@@ -239,6 +244,7 @@ HTTP/1.1 200 OK
 ```
 
 #### 4xx - 客户端错误
+
 ```
 400 Bad Request
 - 请求格式错误
@@ -270,6 +276,7 @@ HTTP/1.1 200 OK
 ```
 
 #### 5xx - 服务器错误
+
 ```
 500 Internal Server Error
 - 服务器内部错误
@@ -291,6 +298,7 @@ HTTP/1.1 200 OK
 ### 📝 练习题 3.1
 
 **问题**：以下场景应该返回什么状态码？
+
 1. 用户登录成功
 2. 用户未登录访问需要认证的接口
 3. 删除用户成功
@@ -389,12 +397,12 @@ func CreateUser(c *gin.Context) {
         c.JSON(400, gin.H{"error": err.Error()})
         return
     }
-    
+
     if err := db.Create(&user).Error; err != nil {
         c.JSON(500, gin.H{"error": "Failed to create user"})
         return
     }
-    
+
     c.JSON(201, user)
 }
 ```
@@ -472,13 +480,13 @@ func DeleteUser(c *gin.Context) {
 
 ### 4.6 方法对比
 
-| 方法 | 幂等 | 安全 | 缓存 | 请求体 | 使用场景 |
-|------|------|------|------|--------|----------|
-| GET | ✅ | ✅ | ✅ | ❌ | 查询 |
-| POST | ❌ | ❌ | ❌ | ✅ | 创建 |
-| PUT | ✅ | ❌ | ❌ | ✅ | 完整更新 |
-| PATCH | ✅ | ❌ | ❌ | ✅ | 部分更新 |
-| DELETE | ✅ | ❌ | ❌ | ❌ | 删除 |
+| 方法   | 幂等 | 安全 | 缓存 | 请求体 | 使用场景 |
+| ------ | ---- | ---- | ---- | ------ | -------- |
+| GET    | ✅   | ✅   | ✅   | ❌     | 查询     |
+| POST   | ❌   | ❌   | ❌   | ✅     | 创建     |
+| PUT    | ✅   | ❌   | ❌   | ✅     | 完整更新 |
+| PATCH  | ✅   | ❌   | ❌   | ✅     | 部分更新 |
+| DELETE | ✅   | ❌   | ❌   | ❌     | 删除     |
 
 ---
 
@@ -566,41 +574,41 @@ import (
 
 func main() {
     r := gin.Default()
-    
+
     // 使用 Cookie 存储 Session
     store := cookie.NewStore([]byte("secret"))
     r.Use(sessions.Sessions("mysession", store))
-    
+
     // 登录接口
     r.POST("/login", func(c *gin.Context) {
         session := sessions.Default(c)
-        
+
         // 验证用户名密码...
-        
+
         // 保存到 Session
         session.Set("user_id", 123)
         session.Set("username", "zhangsan")
         session.Save()
-        
+
         c.JSON(200, gin.H{"message": "Login success"})
     })
-    
+
     // 获取用户信息
     r.GET("/profile", func(c *gin.Context) {
         session := sessions.Default(c)
-        
+
         userID := session.Get("user_id")
         if userID == nil {
             c.JSON(401, gin.H{"error": "Not logged in"})
             return
         }
-        
+
         c.JSON(200, gin.H{
             "user_id": userID,
             "username": session.Get("username"),
         })
     })
-    
+
     r.Run(":8080")
 }
 ```
@@ -612,15 +620,16 @@ func main() {
 <details>
 <summary>点击查看答案</summary>
 
-| 对比项 | Cookie | Session |
-|--------|--------|---------|
-| **存储位置** | 客户端（浏览器） | 服务器 |
-| **安全性** | 较低（可被篡改） | 较高 |
-| **存储大小** | 4KB 左右 | 无限制 |
-| **性能** | 不占服务器资源 | 占用服务器内存 |
-| **生命周期** | 可设置过期时间 | 通常会话结束就失效 |
+| 对比项       | Cookie           | Session            |
+| ------------ | ---------------- | ------------------ |
+| **存储位置** | 客户端（浏览器） | 服务器             |
+| **安全性**   | 较低（可被篡改） | 较高               |
+| **存储大小** | 4KB 左右         | 无限制             |
+| **性能**     | 不占服务器资源   | 占用服务器内存     |
+| **生命周期** | 可设置过期时间   | 通常会话结束就失效 |
 
 **使用建议**：
+
 - 不敏感的数据：用 Cookie（如：语言偏好、主题）
 - 敏感数据：用 Session（如：用户 ID、权限）
 - 现代做法：用 JWT Token（下一章讲）
@@ -634,6 +643,7 @@ func main() {
 ### 必须记住的内容
 
 **HTTP 方法**：
+
 - GET：查询
 - POST：创建
 - PUT：完整更新
@@ -641,6 +651,7 @@ func main() {
 - DELETE：删除
 
 **常用状态码**：
+
 - 200：成功
 - 201：创建成功
 - 400：请求错误
@@ -650,12 +661,14 @@ func main() {
 - 500：服务器错误
 
 **Cookie vs Session**：
+
 - Cookie：客户端存储
 - Session：服务器存储
 
 ### 下一章预告
 
 下一章我们将学习 **HTTPS 和加密**，包括：
+
 - 为什么需要 HTTPS
 - 对称加密和非对称加密
 - SSL/TLS 握手过程
